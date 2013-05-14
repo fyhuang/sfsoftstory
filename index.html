@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Query the list of San Francisco soft-story buildings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 36pt;
+        }
+
+        input#street_name {
+            font-size: 14pt;
+            height: 18pt;
+            padding: 10pt;
+        }
+
+        footer {
+            margin-top: 12em;
+            text-align: center;
+            color: #888;
+        }
+
+        p#results {
+            font-size: 125%;
+            background: #eee;
+            margin: 10pt 0;
+            padding: 12pt;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="row-fluid"><div class="span12">
+        <h1 class="muted">SF Soft-Story Buildings</h1>
+
+        <p>Type in the name of your street to determine if an address is considered to be a <a href="http://sfpublicpress.org/softstorylist">potentially dangerous "soft-story" building</a>. From the source of this data:</p>
+        <blockquote><p>"inspectors say [this list] has not been verified by actual building inspections ... [and] some of the addresses the city generated might be wrong."</p></blockquote>
+
+        <input type="text" id="street_name" class="input-xlarge" placeholder="Street name" disabled /><br />
+
+        <p id="results">Loading ...</p>
+    </div></div>
+
+    <footer>
+        <p>This data was generated using the list from <a href="http://sfpublicpress.org/softstorylist">http://sfpublicpress.org/softstorylist</a>.</p>
+        <p><a href="http://twitter.com/nongraphical">Questions or comments about this page?</a></p>
+    </footer>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="taffy-min.js"></script>
+    <script type="text/javascript">
+        var houses_db = TAFFY();
+        $(function() {
+            $.get('softstory.json', function(data) {
+                houses_db.insert(data);
+                $('#street_name').removeAttr('disabled');
+                $('#results').html('');
+            }, 'json');
+
+            $('#street_name').keyup(function() {
+                var el = $('#street_name');
+                if (el.val().length >= 2) {
+                    var records = houses_db({name:{'leftnocase': el.val()}});
+                    var html = "";
+                    records.each(function(record) {
+                        html += "<p>";
+                        html += record["name"];
+                        html += " - ";
+                        html += record["nums"].join(', ');
+                        html += "</p>";
+                    });
+
+                    $('#results').html(html);
+                }
+                else {
+                    $('#results').html('');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
